@@ -296,7 +296,7 @@ Feel free to fork this project and add your own features!
 This project is for educational purposes.
 
 ## 👨‍💻 Author
-
+kushanlaksitha32@gmail.com
 Created as a learning project for web development and AI integration.
 
 ---
