@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.name }} - Smart Recipe Finder{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        {% if session.user_id %}
+        <a href="{{ url_for('toggle_favorite', recipe_id=recipe.recipe_id) }}" class="btn btn-outline-danger">
+            <i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i>
+            {% if is_favorite %}Remove from{% else %}Add to{% endif %} Favorites
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <img src="{{ recipe.image_url }}" class="card-img-top" alt="{{ recipe.name }}" style="max-height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <h1 class="card-title mb-3">{{ recipe.name }}</h1>
+                    
+                    <div class="d-flex gap-3 mb-4">
+                        <span class="badge bg-primary p-2">
+                            <i class="bi bi-clock"></i> {{ recipe.prep_time }} minutes
+                        </span>
+                        <span class="badge bg-warning text-dark p-2">
+                            <i class="bi bi-star-fill"></i> {{ "%.1f"|format(avg_rating) }} / 5
+                        </span>
+                    </div>
+                    
+                    <h4 class="mt-4 mb-3"><i class="bi bi-basket"></i> Ingredients</h4>
+                    <div class="bg-light p-3 rounded">
+                        <ul class="mb-0">
+                            {% for ingredient in recipe.ingredients.split(',') %}
+                            <li>{{ ingredient.strip() }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <h4 class="mt-4 mb-3"><i class="bi bi-list-ol"></i> Instructions</h4>
+                    <div class="p-3">
+                        {{ recipe.instructions|replace('. ', '.<br><br>')|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            {% if session.user_id %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-star"></i> Rate This Recipe</h5>
+                    <form method="POST" action="{{ url_for('rate_recipe', recipe_id=recipe.recipe_id) }}">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Your Rating:</label>
+                            <select class="form-select" id="rating" name="rating" required>
+                                <option value="">Choose rating...</option>
+                                <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                <option value="4">⭐⭐⭐⭐ Good</option>
+                                <option value="3">⭐⭐⭐ Average</option>
+                                <option value="2">⭐⭐ Below Average</option>
+                                <option value="1">⭐ Poor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment (optional):</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Share your experience..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Rating</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-chat-square-text"></i> Reviews ({{ ratings|length }})
+                    </h5>
+                    {% if ratings %}
+                    <div class="reviews-container" style="max-height: 400px; overflow-y: auto;">
+                        {% for rating in ratings %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <strong>User #{{ rating.user_id }}</strong>
+                                <span class="text-warning">
+                                    {% for i in range(rating.rating) %}⭐{% endfor %}
+                                </span>
+                            </div>
+                            {% if rating.comment %}
+                            <p class="mb-0 small text-muted">{{ rating.comment }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No reviews yet. Be the first to rate this recipe!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

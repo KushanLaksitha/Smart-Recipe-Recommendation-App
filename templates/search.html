@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Search Recipes - Smart Recipe Finder{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-search"></i> Find Your Perfect Recipe
+                    </h2>
+                    <p class="text-center text-muted mb-4">
+                        Enter the ingredients you have, separated by commas
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('search') }}">
+                        <div class="mb-4">
+                            <label for="ingredients" class="form-label fw-bold">Your Ingredients:</label>
+                            <textarea 
+                                class="form-control form-control-lg" 
+                                id="ingredients" 
+                                name="ingredients" 
+                                rows="4" 
+                                placeholder="e.g., chicken, tomatoes, garlic, pasta, cheese"
+                                required
+                            ></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Tip: Be specific! Include proteins, vegetables, spices, and any other ingredients.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-magic"></i> Find Recipes
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="mb-2"><i class="bi bi-lightbulb-fill text-warning"></i> Quick Tips:</h6>
+                        <ul class="mb-0 small">
+                            <li>List all ingredients you're willing to use</li>
+                            <li>Don't worry about exact amounts - just the items</li>
+                            <li>Include seasonings and condiments you have</li>
+                            <li>The more ingredients, the better the match!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

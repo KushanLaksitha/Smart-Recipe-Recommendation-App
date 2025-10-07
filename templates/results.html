@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Recipe Results - Smart Recipe Finder{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <a href="{{ url_for('search') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> New Search
+        </a>
+        
+        {% if recent_recipes %}
+        <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#recentModal">
+            <i class="bi bi-clock-history"></i> Recent Recipes ({{ recent_recipes|length }})
+        </button>
+        {% endif %}
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-2"><i class="bi bi-basket"></i> Your Ingredients:</h5>
+            <p class="text-muted mb-0">{{ query }}</p>
+        </div>
+    </div>
+    
+    <h2 class="mb-4">
+        <i class="bi bi-stars"></i> Matching Recipes 
+        <span class="badge bg-primary">{{ recipes|length }} found</span>
+    </h2>
+    
+    {% if recipes %}
+    <div class="row g-4">
+        {% for item in recipes %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card recipe-card shadow-sm h-100">
+                <img src="{{ item.recipe.image_url }}" class="card-img-top" alt="{{ item.recipe.name }}" style="height: 200px; object-fit: cover;">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ item.recipe.name }}</h5>
+                        <span class="badge bg-success">{{ item.score }}%</span>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <span class="text-muted small">
+                            <i class="bi bi-clock"></i> {{ item.recipe.prep_time }} mins
+                        </span>
+                        <span class="text-muted small ms-2">
+                            <i class="bi bi-star-fill text-warning"></i> {{ item.recipe.rating }}/5
+                        </span>
+                    </div>
+                    
+                    <p class="card-text small text-muted flex-grow-1">
+                        <strong>Ingredients:</strong> 
+                        {% if item.recipe.ingredients|length > 80 %}
+                            {{ item.recipe.ingredients[:80] }}...
+                        {% else %}
+                            {{ item.recipe.ingredients }}
+                        {% endif %}
+                    </p>
+                    
+                    <a href="{{ url_for('recipe_detail', recipe_id=item.recipe.recipe_id) }}" class="btn btn-primary w-100 mt-auto">
+                        <i class="bi bi-eye"></i> View Recipe
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h5><i class="bi bi-info-circle"></i> No Recipes Found</h5>
+        <p class="mb-0">We couldn't find recipes matching your ingredients. Try adding more common ingredients or simplifying your search.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Recent Recipes Modal -->
+{% if recent_recipes %}
+<div class="modal fade" id="recentModal" tabindex="-1" aria-labelledby="recentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recentModalLabel">
+                    <i class="bi bi-clock-history"></i> Recently Viewed Recipes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    {% for recipe in recent_recipes %}
+                    <a href="{{ url_for('recipe_detail', recipe_id=recipe.recipe_id) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 align-items-center">
+                            <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ recipe.name }}</h6>
+                                <p class="mb-1 small text-muted">
+                                    <i class="bi bi-clock"></i> {{ recipe.prep_time }} mins
+                                    <span class="ms-2">
+                                        <i class="bi bi-star-fill text-warning"></i> {{ recipe.rating }}/5
+                                    </span>
+                                </p>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.recipe-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.badge.bg-success {
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}

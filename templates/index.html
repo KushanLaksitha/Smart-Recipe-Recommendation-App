@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-stars"></i> Smart Recipe Finder
+        </h1>
+        <p class="lead mb-4">
+            Transform your available ingredients into delicious meals with AI-powered recommendations
+        </p>
+        {% if not session.user_id %}
+        <div>
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-2">
+                <i class="bi bi-person-plus"></i> Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        </div>
+        {% else %}
+        <a href="{{ url_for('search') }}" class="btn btn-light btn-lg">
+            <i class="bi bi-search"></i> Find Recipes Now
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <h2 class="text-center mb-5">Why Choose Smart Recipe Finder?</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-lightbulb text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">AI-Powered Matching</h5>
+                    <p class="card-text">
+                        Our smart algorithm finds the perfect recipes based on ingredients you already have at home.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-recycle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">Reduce Food Waste</h5>
+                    <p class="card-text">
+                        Stop throwing away ingredients! Discover creative ways to use what you have.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-heart text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">Save Favorites</h5>
+                    <p class="card-text">
+                        Keep track of recipes you love and build your personal cookbook collection.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center mb-4">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px; font-size: 2rem;">
+                    1
+                </div>
+                <h5>Sign Up</h5>
+                <p>Create your free account</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px; font-size: 2rem;">
+                    2
+                </div>
+                <h5>Enter Ingredients</h5>
+                <p>List what you have available</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px; font-size: 2rem;">
+                    3
+                </div>
+                <h5>Get Recipes</h5>
+                <p>AI matches your ingredients</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px; font-size: 2rem;">
+                    4
+                </div>
+                <h5>Cook & Enjoy</h5>
+                <p>Follow simple instructions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="container my-5 text-center">
+    <h2 class="mb-4">Ready to Start Cooking?</h2>
+    <p class="lead mb-4">Join thousands of home cooks reducing waste and discovering new recipes</p>
+    {% if not session.user_id %}
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-rocket-takeoff"></i> Start Now - It's Free!
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
