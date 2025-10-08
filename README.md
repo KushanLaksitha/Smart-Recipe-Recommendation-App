@@ -138,7 +138,7 @@ Before you begin, ensure you have:
 ### Step 1: Clone or Download Project
 
 ```bash
-git clone https://github.com/yourusername/smart-recipe-app.git
+git clone https://github.com/KushanLaksitha/Smart-Recipe-Recommendation-App.git
 cd smart-recipe-app
 ```
 
