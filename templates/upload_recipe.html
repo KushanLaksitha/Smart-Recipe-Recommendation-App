@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Recipe - Smart Recipe Finder{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-cloud-upload"></i> Upload Your Recipe
+                    </h2>
+                    <p class="text-center text-muted mb-4">
+                        Share your favorite recipe with the community!
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('upload_recipe') }}" id="uploadForm">
+                        <!-- Recipe Name -->
+                        <div class="mb-4">
+                            <label for="name" class="form-label fw-bold">
+                                <i class="bi bi-card-heading"></i> Recipe Name *
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg" 
+                                id="name" 
+                                name="name" 
+                                placeholder="e.g., Grandma's Chocolate Chip Cookies"
+                                required
+                                maxlength="255"
+                            >
+                        </div>
+                        
+                        <!-- Ingredients -->
+                        <div class="mb-4">
+                            <label for="ingredients" class="form-label fw-bold">
+                                <i class="bi bi-basket"></i> Ingredients *
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="ingredients" 
+                                name="ingredients" 
+                                rows="5" 
+                                placeholder="Enter ingredients separated by commas&#10;Example: flour, sugar, eggs, butter, chocolate chips, vanilla extract"
+                                required
+                            ></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Separate each ingredient with a comma. Be specific with quantities if possible.
+                            </div>
+                        </div>
+                        
+                        <!-- Instructions -->
+                        <div class="mb-4">
+                            <label for="instructions" class="form-label fw-bold">
+                                <i class="bi bi-list-ol"></i> Cooking Instructions *
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="instructions" 
+                                name="instructions" 
+                                rows="8" 
+                                placeholder="Enter step-by-step instructions. Separate each step with a period.&#10;&#10;Example:&#10;1. Preheat oven to 350°F. 2. Mix flour and sugar in a bowl. 3. Add eggs and butter, mix well. 4. Fold in chocolate chips. 5. Bake for 12-15 minutes."
+                                required
+                            ></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Write clear, numbered steps. Each step should end with a period.
+                            </div>
+                        </div>
+                        
+                        <!-- Prep Time -->
+                        <div class="mb-4">
+                            <label for="prep_time" class="form-label fw-bold">
+                                <i class="bi bi-clock"></i> Preparation Time (minutes) *
+                            </label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="prep_time" 
+                                name="prep_time" 
+                                placeholder="e.g., 30"
+                                required
+                                min="1"
+                                max="600"
+                            >
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Total time including prep and cooking (in minutes).
+                            </div>
+                        </div>
+                        
+                        <!-- Image URL -->
+                        <div class="mb-4">
+                            <label for="image_url" class="form-label fw-bold">
+                                <i class="bi bi-image"></i> Image URL (optional)
+                            </label>
+                            <input 
+                                type="url" 
+                                class="form-control" 
+                                id="image_url" 
+                                name="image_url" 
+                                placeholder="https://example.com/recipe-image.jpg"
+                            >
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Paste a direct link to an image of your recipe. Leave blank for default image.
+                            </div>
+                            
+                            <!-- Image Preview -->
+                            <div id="imagePreview" class="mt-3" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Upload Recipe
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <!-- Tips Section -->
+                    <div class="mt-5 p-4 bg-light rounded">
+                        <h5 class="mb-3"><i class="bi bi-lightbulb-fill text-warning"></i> Tips for Great Recipes</h5>
+                        <ul class="mb-0 small">
+                            <li><strong>Be Detailed:</strong> Include specific measurements and cooking temperatures</li>
+                            <li><strong>Clear Steps:</strong> Number your instructions and keep them simple</li>
+                            <li><strong>List Everything:</strong> Don't forget seasonings and cooking oils</li>
+                            <li><strong>Accurate Time:</strong> Include both prep and cooking time</li>
+                            <li><strong>Good Photo:</strong> Use a high-quality image that shows the finished dish</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Image URL Preview
+document.getElementById('image_url').addEventListener('input', function() {
+    const url = this.value.trim();
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (url && url.startsWith('http')) {
+        previewImg.src = url;
+        preview.style.display = 'block';
+        
+        previewImg.onerror = function() {
+            preview.style.display = 'none';
+        };
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
+// Form validation feedback
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const form = this;
+    
+    if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    form.classList.add('was-validated');
+});
+
+// Character count for textarea
+document.getElementById('instructions').addEventListener('input', function() {
+    const length = this.value.length;
+    const maxLength = 5000;
+    
+    if (!this.nextElementSibling || !this.nextElementSibling.classList.contains('char-count')) {
+        const charCount = document.createElement('div');
+        charCount.className = 'char-count form-text text-end';
+        this.parentElement.appendChild(charCount);
+    }
+    
+    const charCounter = this.parentElement.querySelector('.char-count');
+    charCounter.textContent = `${length} characters`;
+    
+    if (length > maxLength) {
+        charCounter.classList.add('text-danger');
+        this.value = this.value.substring(0, maxLength);
+    } else {
+        charCounter.classList.remove('text-danger');
+    }
+});
+</script>
+{% endblock %}

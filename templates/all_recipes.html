@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}All Recipes - Smart Recipe Finder{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-grid-3x3-gap"></i> Browse All Recipes</h2>
+            <p class="text-muted">Discover our complete collection of delicious recipes</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if session.user_id %}
+            <a href="{{ url_for('upload_recipe') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Recipe
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Filter and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('all_recipes') }}" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            name="search" 
+                            placeholder="Search recipes by name or ingredient..."
+                            value="{{ request.args.get('search', '') }}"
+                        >
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="sort">
+                        <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest First</option>
+                        <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="time" {% if request.args.get('sort') == 'time' %}selected{% endif %}>Prep Time</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Recipe Stats -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Showing <strong>{{ recipes.items|length }}</strong> recipes 
+                (Page {{ recipes.page }} of {{ recipes.pages }})
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recipe Grid -->
+    {% if recipes.items %}
+    <div class="row g-4 mb-4">
+        {% for recipe in recipes.items %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card recipe-card shadow-sm h-100">
+                <div class="img-hover-zoom">
+                    <img src="{{ recipe.image_url }}" class="card-img-top" alt="{{ recipe.name }}" style="height: 200px; object-fit: cover;">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ recipe.name }}</h5>
+                    
+                    <div class="mb-2">
+                        <span class="badge bg-primary">
+                            <i class="bi bi-clock"></i> {{ recipe.prep_time }} mins
+                        </span>
+                        {% set avg_rating = recipe.ratings|length > 0 and (recipe.ratings|sum(attribute='rating') / recipe.ratings|length) or 0 %}
+                        {% if recipe.ratings|length > 0 %}
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-star-fill"></i> {{ "%.1f"|format(avg_rating) }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="card-text small text-muted flex-grow-1">
+                        <strong>Ingredients:</strong> {{ recipe.ingredients[:70] }}...
+                    </p>
+                    
+                    <div class="mt-auto">
+                        <a href="{{ url_for('recipe_detail', recipe_id=recipe.recipe_id) }}" class="btn btn-primary w-100">
+                            <i class="bi bi-eye"></i> View Recipe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if recipes.pages > 1 %}
+    <nav aria-label="Recipe pagination">
+        <ul class="pagination justify-content-center">
+            <!-- Previous Button -->
+            <li class="page-item {% if not recipes.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('all_recipes', page=recipes.prev_num) }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            
+            <!-- Page Numbers -->
+            {% for page_num in recipes.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == recipes.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('all_recipes', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            <!-- Next Button -->
+            <li class="page-item {% if not recipes.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('all_recipes', page=recipes.next_num) }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="bi bi-search text-muted" style="font-size: 5rem;"></i>
+        <h3 class="mt-3">No Recipes Found</h3>
+        <p class="text-muted mb-4">Try adjusting your search or filters.</p>
+        <a href="{{ url_for('all_recipes') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-clockwise"></i> Clear Filters
+        </a>
+        {% if session.user_id %}
+        <a href="{{ url_for('upload_recipe') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add First Recipe
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Stats Section -->
+<div class="bg-light py-4 mt-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h3 class="text-primary">{{ recipes.total }}</h3>
+                <p class="text-muted mb-0">Total Recipes</p>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-success">
+                    <i class="bi bi-people"></i>
+                </h3>
+                <p class="text-muted mb-0">Community Recipes</p>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-warning">
+                    <i class="bi bi-star-fill"></i>
+                </h3>
+                <p class="text-muted mb-0">Rated & Reviewed</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add animation on scroll
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.recipe-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 50);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

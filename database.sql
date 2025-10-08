@@ -87,3 +87,16 @@ INSERT INTO recipes (name, ingredients, instructions, image_url, prep_time) VALU
 ('Greek Salad', 'cucumber, tomato, red onion, olives, feta cheese, olive oil, lemon juice, oregano',
 '1. Chop vegetables into chunks. 2. Combine in bowl. 3. Add olives and feta. 4. Drizzle with olive oil and lemon juice. 5. Sprinkle oregano. 6. Toss gently.',
 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400', 15);
+
+
+ALTER TABLE recipes 
+ADD COLUMN uploaded_by INT DEFAULT NULL AFTER prep_time,
+ADD FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE SET NULL;
+
+-- Add indexes for better performance
+CREATE INDEX idx_uploaded_by ON recipes(uploaded_by);
+CREATE INDEX idx_recipe_name ON recipes(name);
+CREATE INDEX idx_prep_time ON recipes(prep_time);
+
+SELECT 'Database upgrade completed!' as Status;
+exit;

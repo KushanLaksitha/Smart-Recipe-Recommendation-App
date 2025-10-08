@@ -30,8 +30,10 @@ class Recipe(db.Model):
     instructions = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(255))
     prep_time = db.Column(db.Integer)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
     favorites = db.relationship('Favorite', backref='recipe', lazy=True)
     ratings = db.relationship('Rating', backref='recipe', lazy=True)
+    uploader = db.relationship('User', foreign_keys=[uploaded_by], backref='uploaded_recipes')
 
 class Favorite(db.Model):
     __tablename__ = 'favorites'
@@ -216,6 +218,122 @@ def rate_recipe(recipe_id):
     db.session.commit()
     flash('Rating submitted!', 'success')
     return redirect(url_for('recipe_detail', recipe_id=recipe_id))
+
+@app.route('/upload-recipe', methods=['GET', 'POST'])
+@login_required
+def upload_recipe():
+    if request.method == 'POST':
+        name = request.form['name']
+        ingredients = request.form['ingredients']
+        instructions = request.form['instructions']
+        prep_time = int(request.form['prep_time'])
+        image_url = request.form.get('image_url', 'https://via.placeholder.com/400x300?text=Recipe')
+        
+        # Validation
+        if not name or not ingredients or not instructions:
+            flash('Please fill in all required fields!', 'danger')
+            return redirect(url_for('upload_recipe'))
+        
+        new_recipe = Recipe(
+            name=name,
+            ingredients=ingredients,
+            instructions=instructions,
+            prep_time=prep_time,
+            image_url=image_url,
+            uploaded_by=session['user_id']
+        )
+        
+        db.session.add(new_recipe)
+        db.session.commit()
+        
+        flash('Recipe uploaded successfully!', 'success')
+        return redirect(url_for('recipe_detail', recipe_id=new_recipe.recipe_id))
+    
+    return render_template('upload_recipe.html')
+
+@app.route('/all-recipes')
+def all_recipes():
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    search_query = request.args.get('search', '').strip()
+    sort_by = request.args.get('sort', 'newest')
+    
+    # Base query
+    query = Recipe.query
+    
+    # Apply search filter
+    if search_query:
+        search_filter = f"%{search_query}%"
+        query = query.filter(
+            db.or_(
+                Recipe.name.like(search_filter),
+                Recipe.ingredients.like(search_filter)
+            )
+        )
+    
+    # Apply sorting
+    if sort_by == 'oldest':
+        query = query.order_by(Recipe.recipe_id.asc())
+    elif sort_by == 'name':
+        query = query.order_by(Recipe.name.asc())
+    elif sort_by == 'time':
+        query = query.order_by(Recipe.prep_time.asc())
+    else:  # newest (default)
+        query = query.order_by(Recipe.recipe_id.desc())
+    
+    recipes = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('all_recipes.html', recipes=recipes)
+
+@app.route('/my-recipes')
+@login_required
+def my_recipes():
+    # Get recipes uploaded by current user
+    recipes = Recipe.query.filter_by(uploaded_by=session['user_id']).order_by(Recipe.recipe_id.desc()).all()
+    return render_template('my_recipes.html', recipes=recipes)
+
+@app.route('/edit-recipe/<int:recipe_id>', methods=['GET', 'POST'])
+@login_required
+def edit_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    
+    # Check if user owns this recipe
+    if recipe.uploaded_by != session['user_id']:
+        flash('You can only edit your own recipes!', 'danger')
+        return redirect(url_for('all_recipes'))
+    
+    if request.method == 'POST':
+        recipe.name = request.form['name']
+        recipe.ingredients = request.form['ingredients']
+        recipe.instructions = request.form['instructions']
+        recipe.prep_time = int(request.form['prep_time'])
+        recipe.image_url = request.form.get('image_url', recipe.image_url)
+        
+        db.session.commit()
+        flash('Recipe updated successfully!', 'success')
+        return redirect(url_for('recipe_detail', recipe_id=recipe.recipe_id))
+    
+    return render_template('edit_recipe.html', recipe=recipe)
+
+@app.route('/delete-recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+def delete_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    
+    # Check if user owns this recipe
+    if recipe.uploaded_by != session['user_id']:
+        flash('You can only delete your own recipes!', 'danger')
+        return redirect(url_for('all_recipes'))
+    
+    # Delete associated favorites and ratings first
+    Favorite.query.filter_by(recipe_id=recipe_id).delete()
+    Rating.query.filter_by(recipe_id=recipe_id).delete()
+    
+    db.session.delete(recipe)
+    db.session.commit()
+    
+    flash('Recipe deleted successfully!', 'info')
+    return redirect(url_for('my_recipes'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -13,6 +13,11 @@
             <i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i>
             {% if is_favorite %}Remove from{% else %}Add to{% endif %} Favorites
         </a>
+        {% if recipe.uploaded_by == session.user_id %}
+        <a href="{{ url_for('edit_recipe', recipe_id=recipe.recipe_id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Edit Recipe
+        </a>
+        {% endif %}
         {% endif %}
     </div>
     
